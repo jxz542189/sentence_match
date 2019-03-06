@@ -253,7 +253,7 @@ def get_data_id(file_name, word_to_ids, sentence_len=30):
             labels_np.append(np.array([1, 0], dtype=np.int32))
         else:
             labels_np.append(np.array([0, 1], dtype=np.int32))
-    return np.array(premises_np), np.array(premises_len), np.array(hypothesis_np), np.array(hypothesis_len), np.array(labels_np, dtype=np.int32)
+    return np.array(premises_np), np.array(premises_len), np.array(hypothesis_np), np.array(hypothesis_len), np.array(labels_np)
 
 
 if __name__ == '__main__':

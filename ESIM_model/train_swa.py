@@ -83,7 +83,7 @@ def main():
     hypothesis_np = joblib.load('/root/PycharmProjects/sentence_match/data/hypothesis_np_size100_mincount5.m')
     hypothesis_mask = joblib.load('/root/PycharmProjects/sentence_match/data/hypothesis_mask_size100_mincount5.m')
     labels_np = joblib.load('/root/PycharmProjects/sentence_match/data/labels_np_size100_mincount5.m')
-
+    # labels_np = labels_np.astype(np.float32)
     premises_np_train, premises_np_test = train_test_split(premises_np, random_state=1234)
     premises_mask_train, premises_mask_test = train_test_split(premises_mask, random_state=1234)
     hypothesis_np_train, hypothesis_np_test = train_test_split(hypothesis_np, random_state=1234)
@@ -344,7 +344,7 @@ def main():
         best_step_swa = 0
         best_epoch_swa = 0
         step = -1
-        print("=============starting training model==================")
+        print("================================starting training model========================================")
         best_acc, best_step, best_epoch = inference(0, 0, best_acc, best_step, best_epoch, with_moving_statistics=True)
 
         for epoch in range(1, arg.num_epochs+1):
@@ -358,6 +358,7 @@ def main():
                 batch_hypothesis_np_train = hypothesis_np_train[i * arg.batch_size: (i + 1) * arg.batch_size]
                 batch_hypothesis_mask_train = hypothesis_mask_train[i * arg.batch_size: (i + 1) * arg.batch_size]
                 batch_labels_train = labels_np_train[i * arg.batch_size: (i + 1) * arg.batch_size]
+
                 learning_rate = get_learning_rate(step, epoch, batchNums)
                 feed_dict = {model.premise: batch_premises_np_train,
                              model.premise_mask: batch_premises_mask_train,
@@ -375,7 +376,7 @@ def main():
                 else:
                     sess.run([train_op, acc_update_op, loss_update_op], feed_dict=feed_dict)
 
-            acc_v, loss_v, s = sess.run([acc_mean, acc_update_op, loss_update_op])
+            acc_v, loss_v, s = sess.run([acc_mean, loss_mean, summaries_mean])
             writer_train.add_summary(s, global_step=step)
             writer_train.flush()
             print("TRAIN @ EPOCH {} | : acc={:.4f}  loss={:.5f}".format(epoch, acc_v, loss_v))

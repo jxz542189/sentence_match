@@ -58,7 +58,7 @@ def train(model):
     print_log('Loading training and validation data ...', file=logger)
     word_to_ids, id_to_vec = get_word_to_vec(file_name="vec_size100_mincount5.txt")
 
-    # premises_np, premises_mask, hypothesis_np, hypothesis_mask, labels_np = get_data_id("atec_new.csv", word_to_ids, arg.seq_length)
+    premises_np, premises_mask, hypothesis_np, hypothesis_mask, labels_np = get_data_id("atec_new.csv", word_to_ids, arg.seq_length)
     # joblib.dump(premises_np, '/root/PycharmProjects/sentence_match/data/premises_np_size100_mincount5.m')
     # joblib.dump(premises_mask, '/root/PycharmProjects/sentence_match/data/premises_mask_size100_mincount5.m')
     # joblib.dump(hypothesis_np, '/root/PycharmProjects/sentence_match/data/hypothesis_np_size100_mincount5.m')
