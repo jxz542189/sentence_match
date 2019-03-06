@@ -59,7 +59,7 @@ class ModelConfig():
         self.__parser.add_argument('--optimizer',
                                    '-op',
                                    default='adam',
-                                   choices=['adagrad', 'adadelta', 'adam', 'sgd', 'rmsprop', 'momentum'],
+                                   choices=['adagrad', 'adadelta', 'adam', 'sgd', 'rmsprop', 'momentum', 'adamW', 'momentumW'],
                                    type=str,
                                    help='Optimizer algorithm')
         self.__parser.add_argument('--early_stop_step',
@@ -103,7 +103,41 @@ class ModelConfig():
                                    default=1000,
                                    type=int,
                                    help='Number of batches between performance reports')
+        self.__parser.add_argument('--num_train_steps',
+                                   '-nts',
+                                   default=600000,
+                                   type=int,
+                                   help='number of train steps')
 
+        self.__parser.add_argument('--num_warmup_steps',
+                                   '-nws',
+                                   default=10000,
+                                   type=int,
+                                   help='number of warmup steps')
+
+        self.__parser.add_argument('--cycle_epochs',
+                                   '-ce',
+                                   default=5,
+                                   type=int,
+                                   help='number epochs for each cycle')
+        self.__parser.add_argument('--cycle_mode',
+                                   '-cm',
+                                   type=str,
+                                   default="triangular",
+                                   help='mode must be "triangular", "triangular2", or "exp_range"')
+        self.__parser.add_argument('--opt', dest='opt', type=str, default='momentumW')  # adam, adamW, momentum, momentumW
+        self.__parser.add_argument('--momentum', dest='momentum', type=float, default=0.9)
+        self.__parser.add_argument('--weight_decay', dest='weight_decay', type=float, default=1e-4)
+        self.__parser.add_argument('--weight_decay_on', dest='weight_decay_on', type=str, default='all')  # all or kernels
+
+        self.__parser.add_argument('--use_swa', dest='use_swa', type=int, default=1)
+        self.__parser.add_argument('--epochs_before_swa', dest='epochs_before_swa', type=int, default=75)
+        self.__parser.add_argument('--strategy_lr', dest='strategy_lr', type=str, default='swa')  # constant, swa
+        self.__parser.add_argument('--cycle_length', dest='cycle_length', type=int, default=1)  # in epochs
+
+        self.__parser.add_argument('--init_lr', dest='init_lr', type=float, default=0.01)
+        self.__parser.add_argument('--alpha1_lr', dest='alpha1_lr', type=float, default=0.01)
+        self.__parser.add_argument('--alpha2_lr', dest='alpha2_lr', type=float, default=0.0001)
         # IO path
         ## embeddings
         self.__parser.add_argument('--vocab_path',
@@ -162,6 +196,7 @@ class ModelConfig():
                                    default="./tensorboard",
                                    type=str,
                                    help='Tensorboard path')
+
 
     # read config information from config file
     def __readConfig(self):

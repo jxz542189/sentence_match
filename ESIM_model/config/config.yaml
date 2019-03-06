@@ -7,7 +7,8 @@ learning_rate : 0.0004
 l2 : 0.0
 seq_length : 30
 optimizer : adam
-early_stop_step : 50
+early_stop_step : 50000
+
 
 # embeddings hyper-parameters
 threshold : 0
@@ -21,6 +22,13 @@ attention_size : 300
 # report hyper-parameters
 eval_batch : 1000
 
+#cycle hyper-parameters
+num_train_steps : 600000
+num_warmup_steps : 10000
+cycle_epochs : 5
+cycle_mode : triangular
+
+weight_decay_on : all
 
 ## reports
 save_path : ./model/checkpoint

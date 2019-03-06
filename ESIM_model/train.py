@@ -7,6 +7,15 @@ from utils.data_util import *
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
 import sys
+import logging
+
+dt = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+log_path = "log/log.{}".format(dt)
+# log = open(arg.log_path, 'w')
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    filename=log_path)
+logger = logging.getLogger(__name__)
 
 
 tf.reset_default_graph()
@@ -46,15 +55,15 @@ def evaluate(sess, model, premise, premise_mask, hypothesis, hypothesis_mask, y)
 
 
 def train(model):
-    print_log('Loading training and validation data ...', file=log)
+    print_log('Loading training and validation data ...', file=logger)
     word_to_ids, id_to_vec = get_word_to_vec(file_name="vec_size100_mincount5.txt")
 
-    premises_np, premises_mask, hypothesis_np, hypothesis_mask, labels_np = get_data_id("atec_new.csv", word_to_ids, arg.seq_length)
-    joblib.dump(premises_np, '/root/PycharmProjects/sentence_match/data/premises_np_size100_mincount5.m')
-    joblib.dump(premises_mask, '/root/PycharmProjects/sentence_match/data/premises_mask_size100_mincount5.m')
-    joblib.dump(hypothesis_np, '/root/PycharmProjects/sentence_match/data/hypothesis_np_size100_mincount5.m')
-    joblib.dump(hypothesis_mask, '/root/PycharmProjects/sentence_match/data/hypothesis_mask_size100_mincount5.m')
-    joblib.dump(labels_np, '/root/PycharmProjects/sentence_match/data/labels_np_size100_mincount5.m')
+    # premises_np, premises_mask, hypothesis_np, hypothesis_mask, labels_np = get_data_id("atec_new.csv", word_to_ids, arg.seq_length)
+    # joblib.dump(premises_np, '/root/PycharmProjects/sentence_match/data/premises_np_size100_mincount5.m')
+    # joblib.dump(premises_mask, '/root/PycharmProjects/sentence_match/data/premises_mask_size100_mincount5.m')
+    # joblib.dump(hypothesis_np, '/root/PycharmProjects/sentence_match/data/hypothesis_np_size100_mincount5.m')
+    # joblib.dump(hypothesis_mask, '/root/PycharmProjects/sentence_match/data/hypothesis_mask_size100_mincount5.m')
+    # joblib.dump(labels_np, '/root/PycharmProjects/sentence_match/data/labels_np_size100_mincount5.m')
 
     premises_np = joblib.load('/root/PycharmProjects/sentence_match/data/premises_np_size100_mincount5.m')
     premises_mask = joblib.load('/root/PycharmProjects/sentence_match/data/premises_mask_size100_mincount5.m')
@@ -78,7 +87,7 @@ def train(model):
     if not os.path.exists(save_file_dir):
         os.makedirs(save_file_dir)
 
-    print_log('Configuring TensorBoard and Saver ...', file=log)
+    print_log('Configuring TensorBoard and Saver ...', file=logger)
     if not os.path.exists(arg.tfboard_path):
         os.makedirs(arg.tfboard_path)
     tf.summary.scalar('loss', model.loss)
@@ -93,16 +102,16 @@ def train(model):
     sess.run(tf.global_variables_initializer(), {model.embed_matrix: np.array(embeddings)})
 
     total_parameters = count_parameters()
-    print_log('Total trainable parameters : {}'.format(total_parameters), file=log)
+    print_log('Total trainable parameters : {}'.format(total_parameters), file=logger)
 
-    print_log('Start training and evaluating ...', file=log)
+    print_log('Start training and evaluating ...', file=logger)
     start_time = time.time()
     total_batch = 0
     best_acc_val = 0.0
     last_improved_batch = 0
     isEarlyStop = False
     for epoch in range(arg.num_epochs):
-        print_log("Epoch : ", epoch + 1, file=log)
+        print_log("Epoch : {}".format(epoch + 1), file=logger)
         sampleNums = len(premises_np_train)
         batchNums = int((sampleNums - 1) / arg.batch_size)
 
@@ -139,7 +148,7 @@ def train(model):
                                              hypothesis_np_test,
                                              hypothesis_mask_test,
                                              labels_np_test)
-                saver.save(sess=sess, save_path=arg.save_path + '_dev_loss_{:.4f')
+                saver.save(sess=sess, save_path=arg.save_path + '_dev_loss_{:.4f}.ckpt'.format(loss_val))
                 if acc_val > best_acc_val:
                     best_acc_val = acc_val
                     last_improved_batch = total_batch
@@ -150,10 +159,10 @@ def train(model):
                 time_diff = get_time_diff(start_time)
                 msg = 'Epoch : {0:>3}, Batch : {1:>8}, Train Batch Loss : {2:>6.2}, Train Batch Acc : {3:>6.2%}, Dev Loss : {4:>6.2}, Dev Acc : {5:>6.2%}, Time : {6} {7}'
                 print_log(msg.format(epoch + 1, total_batch, batch_loss, batch_acc, loss_val, acc_val, time_diff,
-                                     improved_flag))
+                                     improved_flag), file=logger)
             total_batch += 1
             if total_batch - last_improved_batch > arg.early_stop_step:
-                print_log('No optimization for a long time, auto-stopping ...', file = log)
+                print_log('No optimization for a long time, auto-stopping ...', file = logger)
                 isEarlyStop = True
                 break
         if isEarlyStop:
@@ -161,26 +170,24 @@ def train(model):
         time_diff = get_time_diff(start_time)
         total_loss, total_acc = total_loss / data_nums, total_acc / data_nums
         msg = '** Epoch : {0:>2} finished, Train Loss : {1:>6.2}, Train Acc : {2:6.2%}, Time : {3}'
-        print_log(msg.format(epoch + 1, total_loss, total_acc, time_diff), file = log)
+        print_log(msg.format(epoch + 1, total_loss, total_acc, time_diff), file = logger)
 
 
 if __name__ == '__main__':
     config = Config.ModelConfig()
     arg = config.arg
 
-    dt = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    arg.log_path = "/root/PycharmProjects/sentence_match/ESIM_model/config/log/log.{}".format(dt)
-    log = open(arg.log_path, 'w')
+
 
     arg.n_classes = 2
-    print_log('CMD : python3 {0}'.format(' '.join(sys.argv)), file = log)
-    print_log('Training with following options :', file = log)
-    print_args(arg, log)
+    print_log('CMD : python3 {0}'.format(' '.join(sys.argv)), file = logger)
+    print_log('Training with following options :', file = logger)
+    print_args(arg, logger)
     word_to_ids, id_to_vec = get_word_to_vec(file_name="vec_size100_mincount5.txt")
     arg.n_vocab = len(word_to_ids)
 
     model = ESIM(arg.seq_length, arg.n_vocab, arg.embedding_size, arg.hidden_size, arg.attention_size, arg.n_classes,
                  arg.batch_size, arg.learning_rate, arg.optimizer, arg.l2, arg.clip_value)
     train(model)
-    log.close()
+    # log.close()
 

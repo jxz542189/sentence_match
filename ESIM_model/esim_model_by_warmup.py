@@ -11,7 +11,7 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow.contrib.rnn import LSTMCell, DropoutWrapper
 from ESIM_model.Utils import print_shape
-from ESIM_model import optimization
+from utils import optimization
 
 
 class ESIM(object):

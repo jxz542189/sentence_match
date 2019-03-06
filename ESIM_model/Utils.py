@@ -283,11 +283,13 @@ def convert_embeddings(srcPath, dstPath):
         print('Original embeddings has been converted from {0} to {1}'.format(srcPath, dstPath))
 
 # print log info on SCREEN and LOG file simultaneously
-def print_log(*args, **kwargs):
-    print(*args)
-    if len(kwargs) > 0:
-        print(*args, **kwargs)
-    return None
+# def print_log(*args, **kwargs):
+#     print(*args)
+#     if len(kwargs) > 0:
+#         print(*args, **kwargs)
+#     return None
+def print_log(arg, file):
+    file.info(arg)
 
 # print all used hyper-parameters on both SCREEN an LOG file
 def print_args(args, log_file):
@@ -300,6 +302,6 @@ def print_args(args, log_file):
     print_log("------------- HYPER PARAMETERS -------------", file = log_file)
     for a in argsList:
         print_log("%s: %s" % (a[0], str(a[1])), file = log_file)
-    print("-----------------------------------------", file = log_file)
+    print_log("-----------------------------------------", file = log_file)
     return None
 
