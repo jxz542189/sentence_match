@@ -230,11 +230,11 @@ class MyModel(object):
         #     premise_in = premise_in + positional_encoding
         #     hypothesis_in = hypothesis_in + positional_encoding
 
-        if not config.layer_norm_LSTM:
-            cell = BasicLSTMCell(self.LSTM_dim, state_is_tuple=True)
-        else:
-            cell = LayerNormBasicLSTMCell(self.LSTM_dim)
-        d_cell = SwitchableDropoutWrapper(cell, self.is_train, input_keep_prob=config.keep_rate)
+        # if not config.layer_norm_LSTM:
+        #     cell = BasicLSTMCell(self.LSTM_dim, state_is_tuple=True)
+        # else:
+        #     cell = LayerNormBasicLSTMCell(self.LSTM_dim)
+        # d_cell = SwitchableDropoutWrapper(cell, self.is_train, input_keep_prob=config.keep_rate)
 
         with tf.variable_scope("prepro") as scope:
             # p bilstm
@@ -495,12 +495,14 @@ class MyModel(object):
             logtis_aug = [tf.expand_dims(tensor, axis=2) for tensor in logits]
             self.logits = tf.reduce_max(tf.concat(logtis_aug, axis=2), axis=2)
         elif config.squared_out_logit:
-            self.logits = linear(f0, self.pred_size, True, bias_start=0.0, scope="logit", squeeze=False, wd=config.wd,
+            self.logits = linear(f0, self.pred_size, True, bias_start=0.0,
+                                 scope="logit", squeeze=False, wd=config.wd,
                                  input_keep_prob=config.keep_rate,
                                  is_train=self.is_train)
             self.logits = self.logits * self.logits
         else:
-            self.logits = linear(f0, self.pred_size, True, bias_start=0.0, scope="logit", squeeze=False, wd=config.wd,
+            self.logits = linear(f0, self.pred_size, True, bias_start=0.0,
+                                 scope="logit", squeeze=False, wd=config.wd,
                                  input_keep_prob=config.keep_rate,
                                  is_train=self.is_train)
 
@@ -528,7 +530,7 @@ class MyModel(object):
             enc_loss_ratio = tf.constant(config.enc_loss_ratio, dtype='float', shape=[], name="encoding_loss_ratio")
             enc_logits = linear(cat, 3, True, bias_start=0.0, scope="enc_logit", squeeze=False, wd=config.wd,
                                 input_keep_prob=config.keep_rate, is_train=self.is_train)
-            self.total_cost += tf.reduce_mean(tf.reductf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.y,
+            self.total_cost += tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.y,
                                                                                                      logits=enc_logits)) * enc_loss_ratio
 
         tf.summary.scalar('loss', self.total_cost)
@@ -648,25 +650,25 @@ class MyModel(object):
             tf.summary.scalar('diff_penalty_loss', diff_loss)
             self.total_cost += diff_loss
 
-        if config.similarity_penalty_loss:
-            # losses = tf.map_fn(lambda x: tf.cond(x[0], lambda: x[1], lambda: 1/(x[1]+0.001)) , (self.y, diff_rel), dtype="float")
-            p_vec = tf.reduce_max(p, axis=1)
-            h_vec = tf.reduce_max(h, axis=1)
-            cos_sim = cosine_similarity(p_vec, h_vec)
-            entailment_switch = tf.equal(self.y, tf.constant(0, dtype=tf.int32))
-            neutral_switch = tf.equal(self.y, tf.constant(1, dtype=tf.int32))
-            contradiction_switch = tf.equal(self.y, tf.constant(2, dtype=tf.int32))
-
-            entailment_loss = tf.map_fn(
-                lambda x: tf.cond(x[0], lambda: 1 / x[1], lambda: tf.constant(0.0, dtype=tf.float32)),
-                (entailment_switch, cos_sim), dtype="float")
-            neutral_loss = tf.map_fn(
-                lambda x: tf.cond(x[0], lambda: tf.abs(x[1]), lambda: tf.constant(0.0, dtype=tf.float32)),
-                (neutral_switch, cos_sim), dtype="float")
-            contradiction_loss = tf.map_fn(
-                lambda x: tf.cond(x[0], lambda: 1 / (-x[1]), lambda: tf.constant(0.0, dtype=tf.float32)),
-                (contradiction_switch, cos_sim), dtype="float")
-            self.total_cost += tf.reduce_mean(tf.add_n([entailment_loss, neutral_loss, contradiction_loss]))
+        # if config.similarity_penalty_loss:
+        #     # losses = tf.map_fn(lambda x: tf.cond(x[0], lambda: x[1], lambda: 1/(x[1]+0.001)) , (self.y, diff_rel), dtype="float")
+        #     p_vec = tf.reduce_max(p, axis=1)
+        #     h_vec = tf.reduce_max(h, axis=1)
+        #     cos_sim = cosine_similarity(p_vec, h_vec)
+        #     entailment_switch = tf.equal(self.y, tf.constant(0, dtype=tf.int32))
+        #     neutral_switch = tf.equal(self.y, tf.constant(1, dtype=tf.int32))
+        #     contradiction_switch = tf.equal(self.y, tf.constant(2, dtype=tf.int32))
+        #
+        #     entailment_loss = tf.map_fn(
+        #         lambda x: tf.cond(x[0], lambda: 1 / x[1], lambda: tf.constant(0.0, dtype=tf.float32)),
+        #         (entailment_switch, cos_sim), dtype="float")
+        #     neutral_loss = tf.map_fn(
+        #         lambda x: tf.cond(x[0], lambda: tf.abs(x[1]), lambda: tf.constant(0.0, dtype=tf.float32)),
+        #         (neutral_switch, cos_sim), dtype="float")
+        #     contradiction_loss = tf.map_fn(
+        #         lambda x: tf.cond(x[0], lambda: 1 / (-x[1]), lambda: tf.constant(0.0, dtype=tf.float32)),
+        #         (contradiction_switch, cos_sim), dtype="float")
+        #     self.total_cost += tf.reduce_mean(tf.add_n([entailment_loss, neutral_loss, contradiction_loss]))
 
         self.summary = tf.summary.merge_all()
 
@@ -1280,49 +1282,6 @@ def residual(config, x, in_filter, out_filter, kernel_size, name, padding="SAME"
                         bias = tf.get_variable("biases", shape=[out_filter], dtype='float')
                         x = tf.nn.atrous_conv2d(x, filters, rate=2, padding=padding) + bias
                         x = act(x)
-            # elif config.residual_2_3_receptive_field:
-            #     with tf.variable_scope("sub1"):
-            #         with tf.variable_scope("sub1"):
-            #             x1 = convolution2d(x, out_filter / 2, 2, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         with tf.variable_scope("sub2"):
-            #             x2 = convolution2d(x, out_filter / 2, 3, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         x = tf.concat([x1, x2], axis=3)
-            #     with tf.variable_scope("sub2"):
-            #         with tf.variable_scope("sub1"):
-            #             x1 = convolution2d(x, out_filter / 2, 2, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         with tf.variable_scope("sub2"):
-            #             x2 = convolution2d(x, out_filter / 2, 3, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         x = tf.concat([x1, x2], axis=3)
-            # elif config.residual_3_5_receptive_field:
-            #     with tf.variable_scope("sub1"):
-            #         with tf.variable_scope("sub1"):
-            #             x1 = convolution2d(x, out_filter / 2, 3, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         with tf.variable_scope("sub2"):
-            #             x2 = convolution2d(x, out_filter / 2, 5, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         x = tf.concat([x1, x2], axis=3)
-            #     with tf.variable_scope("sub2"):
-            #         with tf.variable_scope("sub1"):
-            #             x1 = convolution2d(x, out_filter / 2, 3, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         with tf.variable_scope("sub2"):
-            #             x2 = convolution2d(x, out_filter / 2, 5, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         x = tf.concat([x1, x2], axis=3)
-            # elif config.residual_2_3_5_receptive_field:
-            #     with tf.variable_scope("sub1"):
-            #         with tf.variable_scope("sub1"):
-            #             x1 = convolution2d(x, out_filter / 4, 2, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         with tf.variable_scope("sub2"):
-            #             x2 = convolution2d(x, out_filter / 2, 3, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         with tf.variable_scope("sub3"):
-            #             x3 = convolution2d(x, out_filter / 4, 5, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         x = tf.concat([x1, x2, x3], axis=3)
-            #     with tf.variable_scope("sub2"):
-            #         with tf.variable_scope("sub1"):
-            #             x1 = convolution2d(x, out_filter / 4, 2, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         with tf.variable_scope("sub2"):
-            #             x2 = convolution2d(x, out_filter / 2, 3, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         with tf.variable_scope("sub3"):
-            #             x3 = convolution2d(x, out_filter / 4, 5, padding=padding, normalizer_fn=norm, activation_fn=act)
-            #         x = tf.concat([x1, x2, x3], axis=3)
             else:
                 with tf.variable_scope("sub1"):
                     if config.CNN_normalize:
@@ -1581,10 +1540,7 @@ def memory_augment_layer(config, x, x_mask, is_train, memory_size, name=None):
 
                 variable_summaries(keys, "memory_keys_{}".format(i))
                 variable_summaries(values, "memory_values_{}".format(i))
-
-
-
-        else:  # attentional memory augmentation
+        else:
             mem = tf.get_variable("memory_key_and_value", shape=[memory_size, dim])
             mem_mask = tf.ones([memory_size, 1], name='memory_mask')
             mem_aug = tf.expand_dims(mem, 0)
