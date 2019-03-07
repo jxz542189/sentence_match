@@ -1,5 +1,5 @@
 # training hyper-parameters
-num_epochs : 300
+num_epochs : 10
 batch_size : 32
 dropout_keep_prob : 0.5
 clip_value : 10
