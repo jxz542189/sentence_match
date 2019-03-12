@@ -195,7 +195,8 @@ class MyModel(object):
 
         if config.embedding_fuse_gate:
             with tf.variable_scope("embedding_fuse_gate") as scope:
-                premise_in = fuse_gate(config, self.is_train, premise_in, premise_in, scope="embedding_fuse_gate")
+                premise_in = fuse_gate(config, self.is_train, premise_in, premise_in,
+                                       scope="embedding_fuse_gate")
                 scope.reuse_variables()
                 hypothesis_in = fuse_gate(config, self.is_train, hypothesis_in, hypothesis_in,
                                           scope="embedding_fuse_gate")
