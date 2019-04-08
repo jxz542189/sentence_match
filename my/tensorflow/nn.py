@@ -224,7 +224,8 @@ def variable_summaries(var, scope):
         tf.summary.histogram('histogram', var)
 
 
-def dense_logits(config, args, out_size, bias, bias_start=0.0, scope=None, mask=None, wd=0.0, input_keep_prob=1.0, is_train=None, func=None):
+def dense_logits(config, args, out_size, bias, bias_start=0.0, scope=None,
+                 mask=None, wd=0.0, input_keep_prob=1.0, is_train=None, func=None):
     with tf.variable_scope(scope or "dense_logits"):
 
         #Tri_linear 

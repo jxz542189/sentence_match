@@ -65,23 +65,5 @@ def bidirectional_dynamic_rnn(cell_fw, cell_bw, inputs, sequence_length=None,
 
     fw_outputs = reconstruct(flat_fw_outputs, inputs, 2)
     bw_outputs = reconstruct(flat_bw_outputs, inputs, 2)
-    # FIXME : final state is not reshaped!
     return (fw_outputs, bw_outputs), final_state
 
-
-# def bidirectional_rnn(cell_fw, cell_bw, inputs,
-#                       initial_state_fw=None, initial_state_bw=None,
-#                       dtype=None, sequence_length=None, scope=None):
-
-#     flat_inputs = flatten(inputs, 2)  # [-1, J, d]
-#     flat_len = None if sequence_length is None else tf.cast(flatten(sequence_length, 0), 'int64')
-
-#     (flat_fw_outputs, flat_bw_outputs), final_state = \
-#         _bidirectional_rnn(cell_fw, cell_bw, flat_inputs, sequence_length=flat_len,
-#                            initial_state_fw=initial_state_fw, initial_state_bw=initial_state_bw,
-#                            dtype=dtype, scope=scope)
-
-#     fw_outputs = reconstruct(flat_fw_outputs, inputs, 2)
-#     bw_outputs = reconstruct(flat_bw_outputs, inputs, 2)
-#     # FIXME : final state is not reshaped!
-#     return (fw_outputs, bw_outputs), final_state

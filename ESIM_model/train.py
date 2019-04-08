@@ -178,7 +178,6 @@ if __name__ == '__main__':
     arg = config.arg
 
 
-
     arg.n_classes = 2
     print_log('CMD : python3 {0}'.format(' '.join(sys.argv)), file = logger)
     print_log('Training with following options :', file = logger)

@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.python.ops.rnn_cell import DropoutWrapper, RNNCell, LSTMStateTuple
+# from tensorflow.python.ops.rnn_cell import DropoutWrapper, RNNCell, LSTMStateTuple
 from tensorflow.contrib.rnn.python.ops.core_rnn_cell import RNNCell
 from tensorflow.contrib.rnn import LSTMStateTuple, DropoutWrapper
 from my.tensorflow import exp_mask, flatten
@@ -9,7 +9,8 @@ from my.tensorflow.nn import linear, softsel, double_linear_logits
 class SwitchableDropoutWrapper(DropoutWrapper):
     def __init__(self, cell, is_train, input_keep_prob=1.0, output_keep_prob=1.0,
              seed=None):
-        super(SwitchableDropoutWrapper, self).__init__(cell, input_keep_prob=input_keep_prob, output_keep_prob=output_keep_prob,
+        super(SwitchableDropoutWrapper, self).__init__(cell, input_keep_prob=input_keep_prob,
+                                                       output_keep_prob=output_keep_prob,
                                                        seed=seed)
         self.is_train = is_train
 

@@ -2,8 +2,6 @@ import tensorflow as tf
 from DIIN_model.util import blocks
 from my.tensorflow.nn import softsel, get_logits, highway_network, multi_conv1d, linear
 from my.tensorflow.nn import conv2d, cosine_similarity, variable_summaries, dense_logits, fuse_gate
-from my.tensorflow import flatten, reconstruct, add_wd, exp_mask
-import numpy as np
 
 
 class MyModel(object):

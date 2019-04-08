@@ -147,11 +147,11 @@ class MyModel(object):
                         if config.char_feature_linear:
                             with tf.variable_scope("char_linear") as scope:
                                 conv_d = config.char_out_size
-                                conv_pre = linear(conv_pre, conv_d, True, bias_start=0.0, scope="char_linear", \
+                                conv_pre = linear(conv_pre, conv_d, True, bias_start=0.0, scope="char_linear",
                                                   squeeze=False, wd=config.wd, input_keep_prob=config.keep_rate,
                                                   is_train=self.is_train)
                                 scope.reuse_variables()
-                                conv_hyp = linear(conv_hyp, conv_d, True, bias_start=0.0, scope="char_linear", \
+                                conv_hyp = linear(conv_hyp, conv_d, True, bias_start=0.0, scope="char_linear",
                                                   squeeze=False, wd=config.wd, input_keep_prob=config.keep_rate,
                                                   is_train=self.is_train)
                         elif config.char_feature_highway:
