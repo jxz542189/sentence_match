@@ -204,10 +204,10 @@ def main():
                 if not arg.use_swa:
                     return arg.init_lr
 
-                if step > int(0.9 * arg.epochs * steps_per_epoch):
+                if step > int(0.9 * arg.num_epochs * steps_per_epoch):
                     return arg.alpha2_lr
 
-                length_slope = int(0.9 * arg.epochs * steps_per_epoch) - arg.epochs_before_swa * steps_per_epoch
+                length_slope = int(0.9 * arg.num_epochs * steps_per_epoch) - arg.epochs_before_swa * steps_per_epoch
                 return arg.alpha1_lr - ((arg.alpha1_lr - arg.alpha2_lr) / length_slope) * \
                        (step - arg.epochs_before_swa * steps_per_epoch)
         else:

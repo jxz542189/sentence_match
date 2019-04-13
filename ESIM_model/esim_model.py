@@ -12,6 +12,7 @@ import tensorflow as tf
 from tensorflow.contrib.rnn import LSTMCell, DropoutWrapper
 from ESIM_model.Utils import print_shape
 
+
 class ESIM(object):
     def __init__(self, seq_length, n_vocab, embedding_size,
                  hidden_size, attention_size, n_classes,

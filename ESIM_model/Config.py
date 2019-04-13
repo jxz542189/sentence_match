@@ -131,7 +131,7 @@ class ModelConfig():
         self.__parser.add_argument('--weight_decay_on', dest='weight_decay_on', type=str, default='all')  # all or kernels
 
         self.__parser.add_argument('--use_swa', dest='use_swa', type=int, default=1)
-        self.__parser.add_argument('--epochs_before_swa', dest='epochs_before_swa', type=int, default=75)
+        self.__parser.add_argument('--epochs_before_swa', dest='epochs_before_swa', type=int, default=5)
         self.__parser.add_argument('--strategy_lr', dest='strategy_lr', type=str, default='swa')  # constant, swa
         self.__parser.add_argument('--cycle_length', dest='cycle_length', type=int, default=1)  # in epochs
 
