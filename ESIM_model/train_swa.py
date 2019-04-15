@@ -70,14 +70,13 @@ def main():
 
     tf.set_random_seed(seed=42)
 
-    print("... creating a TensorFlow session ...\n")
+    print_log("... creating a TensorFlow session ...\n", file=logger)
     config = tf.ConfigProto()
     config.allow_soft_placement = True
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
 
-
-    print('... loading dataset ...')
+    print_log('... loading dataset ...', file=logger)
     premises_np = joblib.load('/root/PycharmProjects/sentence_match/data/premises_np_size100_mincount5.m')
     premises_mask = joblib.load('/root/PycharmProjects/sentence_match/data/premises_mask_size100_mincount5.m')
     hypothesis_np = joblib.load('/root/PycharmProjects/sentence_match/data/hypothesis_np_size100_mincount5.m')
@@ -213,6 +212,7 @@ def main():
         else:
             raise ValueError('Invalid --strategy_lr : {}'.format(arg.strategy_lr))
 
+        ###################一定要注意，如果模型中没有使用batch norm，不要加入fit_bn_statistics
         def fit_bn_statistics(epoch, swa=False):
             sess.run(reset_bn_ops)
 
@@ -280,10 +280,10 @@ def main():
                 best_saver.save(sess, ckpt_path, global_step=step)
             else:
                 color = COLORS['red']
-            print("VALIDATION (moving_statistics:{}) @ EPOCH {} | without SWA : {}acc={:.4f}{}  loss={:.5f}".format(with_moving_statistics,
+            print_log("VALIDATION (moving_statistics:{}) @ EPOCH {} | without SWA : {}acc={:.4f}{}  loss={:.5f}".format(with_moving_statistics,
                                                                                                                     epoch,
                                                                                                                     color[0], acc_v, color[1],
-                                                                                                                     loss_v))
+                                                                                                                     loss_v), file=logger)
 
             return best_acc, best_step, best_epoch
 
@@ -329,9 +329,9 @@ def main():
             else:
                 color = COLORS['red']
 
-            print("VALIDATION @ EPOCH {} | with SWA : {}acc={:.4f}{}  loss={:.5f}".format(epoch,
+            print_log("VALIDATION @ EPOCH {} | with SWA : {}acc={:.4f}{}  loss={:.5f}".format(epoch,
                                                                                           color[0], acc_v, color[1],
-                                                                                          loss_v))
+                                                                                          loss_v), file=logger)
             sess.run(restore_weight_backups)
             return best_acc_swa, best_step_swa, best_epoch_swa
 
@@ -344,7 +344,7 @@ def main():
         best_step_swa = 0
         best_epoch_swa = 0
         step = -1
-        print("================================starting training model========================================")
+        print_log("================================starting training model========================================", file=logger)
         best_acc, best_step, best_epoch = inference(0, 0, best_acc, best_step, best_epoch, with_moving_statistics=True)
 
         for epoch in range(1, arg.num_epochs+1):
@@ -379,7 +379,7 @@ def main():
             acc_v, loss_v, s = sess.run([acc_mean, loss_mean, summaries_mean])
             writer_train.add_summary(s, global_step=step)
             writer_train.flush()
-            print("TRAIN @ EPOCH {} | : acc={:.4f}  loss={:.5f}".format(epoch, acc_v, loss_v))
+            print_log("TRAIN @ EPOCH {} | : acc={:.4f}  loss={:.5f}".format(epoch, acc_v, loss_v), file=logger)
 
             best_acc, best_step, best_epoch = inference(epoch, step, best_acc, best_step, best_epoch,
                                                         with_moving_statistics=True)
@@ -394,12 +394,12 @@ def main():
                                                                             best_step_swa, best_epoch_swa)
 
         if best_acc > 0:
-            print("Load best model without SWA | ACC={:.5f} from epoch={}".format(best_acc, best_epoch))
+            print_log("Load best model without SWA | ACC={:.5f} from epoch={}".format(best_acc, best_epoch), file=logger)
             model_to_restore = get_best_model(log_dir, model='best_model')
             if model_to_restore is not None:
                 best_saver.restore(sess, model_to_restore)
             else:
-                print("Impossible to load best model ...")
+                print_log("Impossible to load best model ...", file=logger)
 
             sess.run(local_init_op)
             sampleNums = len(premises_np_test)
@@ -423,15 +423,15 @@ def main():
             acc_v, loss_v, s = sess.run([acc_mean, loss_mean, summaries_mean])
             writer_test.add_summary(s, global_step=best_step)
             writer_test.flush()
-            print("TEST @ EPOCH {} | without SWA : acc={:.4f}  loss={:.5f}".format(best_epoch, acc_v, loss_v))
+            print_log("TEST @ EPOCH {} | without SWA : acc={:.4f}  loss={:.5f}".format(best_epoch, acc_v, loss_v), file=logger)
 
         if best_acc > 0.:
-            print("Load best model without SWA  |  ACC={:.5f} form epoch={}".format(best_acc, best_epoch))
+            print_log("Load best model without SWA  |  ACC={:.5f} form epoch={}".format(best_acc, best_epoch), file=logger)
             model_to_restore = get_best_model(log_dir, model='best_model')
             if model_to_restore is not None:
                 best_saver.restore(sess, model_to_restore)
             else:
-                print("Impossible to load best model .... ")
+                print_log("Impossible to load best model .... ", file=logger)
 
             fit_bn_statistics(epoch, swa=False)
             sess.run(local_init_op)
@@ -456,17 +456,17 @@ def main():
             acc_v, loss_v, s = sess.run([acc_mean, loss_mean, summaries_mean])
             writer_test.add_summary(s, global_step=best_step)
             writer_test.flush()
-            print("TEST @ EPOCH {} | without SWA : acc={:.4f}  loss={:.5f}".format(best_epoch, acc_v, loss_v))
+            print_log("TEST @ EPOCH {} | without SWA : acc={:.4f}  loss={:.5f}".format(best_epoch, acc_v, loss_v), file=logger)
 
         if best_acc_swa > 0 and arg.use_swa:
-            print("Load best model with SWA  |  ACC={:.5f} form epoch={}".format(best_acc_swa, best_epoch_swa))
+            print_log("Load best model with SWA  |  ACC={:.5f} form epoch={}".format(best_acc_swa, best_epoch_swa), file=logger)
             model_to_restore = get_best_model(log_dir, model='best_model_swa')
             if model_to_restore is not None:
                 # regular weights are already set to SWA weights ... no need to run 'retrieve_swa_weights' op.
                 # and BN statistics are already set correctly
                 best_saver_swa.restore(sess, model_to_restore)
             else:
-                print("Impossible to load best model .... ")
+                print_log("Impossible to load best model .... ", file=logger)
 
             fit_bn_statistics(epoch, swa=False)
             sess.run(local_init_op)
@@ -491,7 +491,7 @@ def main():
             acc_v, loss_v, s = sess.run([acc_mean, loss_mean, summaries_mean])
             writer_test.add_summary(s, global_step=best_step)
             writer_test.flush()
-            print("TEST @ EPOCH {} | without SWA : acc={:.4f}  loss={:.5f}".format(best_epoch, acc_v, loss_v))
+            print_log("TEST @ EPOCH {} | without SWA : acc={:.4f}  loss={:.5f}".format(best_epoch, acc_v, loss_v), file=logger)
 
         writer_train.close()
         writer_val.close()
