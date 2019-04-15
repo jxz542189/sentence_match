@@ -86,6 +86,8 @@ class ESIM(object):
         a_bar, b_bar = self._inputEncodingBlock('input_encoding')
         m_a, m_b = self._localInferenceBlock(a_bar, b_bar, 'local_inference')
         logits = self._compositionBlock(m_a, m_b, self.hidden_size, 'composition')
+        # with tf.variable_scope('logits'):
+        #     logits = logits
         return logits
 
     # feed forward unit

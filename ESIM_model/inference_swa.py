@@ -40,7 +40,7 @@ with jit_scope():
 
 
     with tf.Session() as sess:
-        with tf.gfile.GFile('tmp_dir/tmpf4ig8uue', 'rb') as f:
+        with tf.gfile.GFile('tmp_dir/tmpz2cylzfu', 'rb') as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
         output = tf.import_graph_def(graph_def,
@@ -70,11 +70,12 @@ with jit_scope():
         batch_premises_mask_test = premises_mask_test[i * arg.batch_size: (i + 1) * arg.batch_size]
         batch_hypothesis_np_test = hypothesis_np_test[i * arg.batch_size: (i + 1) * arg.batch_size]
         batch_hypothesis_mask_test = hypothesis_mask_test[i * arg.batch_size: (i + 1) * arg.batch_size]
-        print(sess.run(output, feed_dict={model.premise: batch_premises_np_test,
+        result = sess.run(output, feed_dict={model.premise: batch_premises_np_test,
                              model.premise_mask: batch_premises_mask_test,
                              model.hypothesis: batch_hypothesis_np_test,
                              model.hypothesis_mask: batch_hypothesis_mask_test,
                              model.is_training: False,
                              model.use_moving_statistics: False,
-                             model.dropout_keep_prob: 1.0}))
+                             model.dropout_keep_prob: 1.0})
+        print(np.argmax(result))
 
