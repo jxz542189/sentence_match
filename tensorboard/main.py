@@ -11,6 +11,8 @@ import tensorflow as tf
 
 from tensorflow.examples.tutorials.mnist import input_data
 
+
+#################tensorboard --logdir=log###################################
 max_steps = 1000  # 最大迭代次数
 learning_rate = 0.001  # 学习率
 dropout = 0.9  # dropout时随机保留神经元的比例
