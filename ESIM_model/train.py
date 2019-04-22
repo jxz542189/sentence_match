@@ -53,7 +53,6 @@ def evaluate(sess, model, premise, premise_mask, hypothesis, hypothesis_mask, y)
     return total_loss / batchNums, total_acc / batchNums
 
 
-
 def train(model):
     print_log('Loading training and validation data ...', file=logger)
     word_to_ids, id_to_vec = get_word_to_vec(file_name="vec_size100_mincount5.txt")

@@ -29,13 +29,13 @@ def subtypes(s):
 
 pa = parser.add_argument
 
-pa("model_type", choices=models, type=types, help="Give model type.")
-pa("model_name", type=str, help="Give model name, this will name logs and checkpoints made. For example cbow, esim_test etc.")
+pa("--model_type", default='DIIN', help="Give model type.")
+pa("--model_name", type=str, default='DIIN_model', help="Give model name, this will name logs and checkpoints made. For example cbow, esim_test etc.")
 
-pa("--datapath", type=str, default="../data")
-pa("--ckptpath", type=str, default="../logs")
-pa("--logpath", type=str, default="../logs")
-pa("--tbpath", type=str, default="../logs", help='tensorboard path')
+pa("--datapath", type=str, default="data")
+pa("--ckptpath", type=str, default="logs")
+pa("--logpath", type=str, default="logs")
+pa("--tbpath", type=str, default="logs", help='tensorboard path')
 
 pa("--emb_to_load", type=int, default=None, help="Number of embeddings to load. If None, all embeddings are loaded.")
 pa("--learning_rate", type=float, default=0.5, help="Learning rate for model")
@@ -43,7 +43,13 @@ pa("--keep_rate", type=float, default=1.0, help="Keep rate for dropout in the mo
 pa("--input_keep_rate", type=float, default=0.8, help='keep rate for embedding')
 pa("--use_input_dropout", action='store_true', help='use input dropout')
 pa("--seq_length", type=int, default=48, help="Max sequence length")
-pa("--emb_train", action='store_false', help="Call if you want to make your word embeddings trainable.")
+pa("--emb_train", default=False, help="Call if you want to make your word embeddings trainable.")
+pa("--emb_dim", default=100, help="Call if you want to make your word embeddings trainable.")
+pa("--hidden_dim", default=100, help="hidden_dim")
+pa("--n_tokens", default=3940, help="n_tokens")
+pa("--char_vocab_size", default=1140, help="char_vocab_size")
+pa("--optimizer", default="momentum")
+pa("--clip_value", default=5)
 
 pa("--genre", type=str, help="Which genre to train on")
 pa("--alpha", type=float, default=0.15, help="What percentage of SNLI data to use in training")
@@ -61,7 +67,7 @@ pa("--batch_size", type=int, default=70, help="batch size") ####
 pa("--display_step", type=int, default=50, help='display steps')
 pa("--eval_step", type=int, default=1000, help='eval step')
 pa("--l2_regularization_ratio", type=float, default=9e-5, help='l2 regularization ratio') ##
-pa("--training_completely_on_snli", action='store_true', help='train completely on snli')
+pa("--training_completely_on_snli", action='store_true', default=1, help='train completely on snli')
 pa("--use_lr_decay",action='store_true',help='lr decay')
 # pa("--lr_decay_rate", type=float, default=0.99, help='lr decay rate')
 pa("--use_label_smoothing", action='store_true', help='label smoothing')

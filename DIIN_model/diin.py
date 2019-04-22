@@ -13,6 +13,8 @@ class MyModel(object):
         self.dim = hidden_dim
         self.sequence_length = seq_length
         self.pred_size = pred_size
+        self.optimizer = config.optimizer
+        self.clip_value = config.clip_value
         # self.config = config
 
         ## Define the placeholders
@@ -239,6 +241,30 @@ class MyModel(object):
             total_parameters += param_num
         print(total_parameters)
 
+        self.train_op = self._training_op()
+
+    def _training_op(self):
+        with tf.name_scope('training'):
+            if self.optimizer == 'adam':
+                optimizer = tf.train.AdamOptimizer(self.dropout_keep_rate)
+            elif self.optimizer == 'rmsprop':
+                optimizer = tf.train.RMSPropOptimizer(self.dropout_keep_rate)
+            elif self.optimizer == 'momentum':
+                optimizer = tf.train.MomentumOptimizer(self.dropout_keep_rate, momentum=0.9)
+            elif self.optimizer == 'sgd':
+                optimizer = tf.train.GradientDescentOptimizer(self.dropout_keep_rate)
+            elif self.optimizer == 'adadelta':
+                optimizer = tf.train.AdadeltaOptimizer(self.dropout_keep_rate)
+            elif self.optimizer == 'adagrad':
+                optimizer = tf.train.AdagradOptimizer(self.dropout_keep_rate)
+            else:
+                ValueError('Unknown optimizer : {0}'.format(self.optimizer))
+        gradients, v = zip(*optimizer.compute_gradients(self.total_cost))
+        if self.clip_value is not None:
+            gradients, _ = tf.clip_by_global_norm(gradients, self.clip_value)
+        train_op = optimizer.apply_gradients(zip(gradients, v))
+        return train_op
+
 
 def bi_attention_mx(config, is_train, p, h, p_mask=None, h_mask=None, scope=None):  # [N, L, 2d]
     with tf.variable_scope(scope or "dense_logit_bi_attention"):
@@ -382,5 +408,7 @@ def dense_net_transition_layer(config, feature_map, transition_rate, scope=None)
         print("Transition Layer out shape")
         print(feature_map.get_shape().as_list())
         return feature_map
+
+
 
 
