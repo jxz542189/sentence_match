@@ -11,7 +11,7 @@ from DIIN_model.util import parameters as params
 import numpy as np
 import time
 
-
+tf.reset_default_graph()
 os.environ['CUDA_VISIBLE_DEVICES'] ='0,1,2,3'
 path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 data_path = os.path.join(path, 'data')
@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger(__name__)
 
 
-tf.reset_default_graph()
+
 
 
 def feed_data(model, premise, hypothesis,
