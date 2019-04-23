@@ -15,6 +15,7 @@ class MyModel(object):
         self.pred_size = pred_size
         self.optimizer = config.optimizer
         self.clip_value = config.clip_value
+        self.learning_rate = config.learning_rate
         # self.config = config
 
         ## Define the placeholders
@@ -246,17 +247,17 @@ class MyModel(object):
     def _training_op(self):
         with tf.name_scope('training'):
             if self.optimizer == 'adam':
-                optimizer = tf.train.AdamOptimizer(self.dropout_keep_rate)
+                optimizer = tf.train.AdamOptimizer(self.learning_rate)
             elif self.optimizer == 'rmsprop':
-                optimizer = tf.train.RMSPropOptimizer(self.dropout_keep_rate)
+                optimizer = tf.train.RMSPropOptimizer(self.learning_rate)
             elif self.optimizer == 'momentum':
-                optimizer = tf.train.MomentumOptimizer(self.dropout_keep_rate, momentum=0.9)
+                optimizer = tf.train.MomentumOptimizer(self.learning_rate, momentum=0.9)
             elif self.optimizer == 'sgd':
-                optimizer = tf.train.GradientDescentOptimizer(self.dropout_keep_rate)
+                optimizer = tf.train.GradientDescentOptimizer(self.learning_rate)
             elif self.optimizer == 'adadelta':
-                optimizer = tf.train.AdadeltaOptimizer(self.dropout_keep_rate)
+                optimizer = tf.train.AdadeltaOptimizer(self.learning_rate)
             elif self.optimizer == 'adagrad':
-                optimizer = tf.train.AdagradOptimizer(self.dropout_keep_rate)
+                optimizer = tf.train.AdagradOptimizer(self.learning_rate)
             else:
                 ValueError('Unknown optimizer : {0}'.format(self.optimizer))
         gradients, v = zip(*optimizer.compute_gradients(self.total_cost))

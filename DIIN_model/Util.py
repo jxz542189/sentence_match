@@ -1,3 +1,5 @@
+import time
+from datetime import timedelta
 def print_log(arg, file):
     file.info(arg)
 

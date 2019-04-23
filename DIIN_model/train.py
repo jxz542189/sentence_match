@@ -3,22 +3,20 @@ import os
 from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
-import sys
 import logging
 import tensorflow as tf
 from utils.data_util import get_word_to_vec, get_data_id_diin
-from DIIN_model.Util import print_log, count_parameters, get_time_diff
+from DIIN_model.Util import print_log, count_parameters, get_time_diff, print_args
 from DIIN_model.util import parameters as params
 import numpy as np
 import time
-from datetime import timedelta
 
 
+os.environ['CUDA_VISIBLE_DEVICES'] ='0,1,2,3'
 path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 data_path = os.path.join(path, 'data')
 dt = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-log_path = "logs/log.{}".format(dt)
-# log = open(arg.log_path, 'w')
+log_path = os.path.join(path, 'DIIN_model', "logs/log.{}".format(dt))
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     filename=log_path)
@@ -58,9 +56,7 @@ def evaluate(sess, model, premise, hypothesis,
     total_loss, total_acc = 0.0, 0.0
     for i in range(batchNums):
         batch_premises_np_train = premise[i * arg.batch_size: (i + 1) * arg.batch_size]
-        # batch_premises_mask_train = premise_mask[i * arg.batch_size: (i + 1) * arg.batch_size]
         batch_hypothesis_np_train = hypothesis[i * arg.batch_size: (i + 1) * arg.batch_size]
-        # batch_hypothesis_mask_train = hypothesis_mask[i * arg.batch_size: (i + 1) * arg.batch_size]
         batch_premise_pos_train = premise_pos[i * arg.batch_size: (i + 1) * arg.batch_size]
         batch_hypothesis_pos_train = hypothesis_pos[i * arg.batch_size: (i + 1) * arg.batch_size]
         batch_premise_char_train = premise_char[i * arg.batch_size: (i + 1) * arg.batch_size]
@@ -85,7 +81,7 @@ def train(model, arg):
     premises_np, premises_mask, hypothesis_np, \
     hypothesis_mask, premises_pos, hypothesis_pos, \
     premises_char, hypothesis_char, premise_exact_match, \
-    hypothesis_exact_match, labels_np = get_data_id_diin("test.csv", word_to_ids, arg.seq_length, arg.char_in_word_size)
+    hypothesis_exact_match, labels_np = get_data_id_diin("atec_new.csv", word_to_ids, arg.seq_length, arg.char_in_word_size)
     if not os.path.exists(os.path.join(data_path, 'premises_np_size100_mincount5.m')):
         joblib.dump(premises_np, os.path.join(data_path, 'premises_np_size100_mincount5.m'))
         joblib.dump(premises_mask, os.path.join(data_path, 'premises_mask_size100_mincount5.m'))
@@ -126,7 +122,6 @@ def train(model, arg):
 
     data_nums = len(premises_np_train)
     saver = tf.train.Saver(max_to_keep=5)
-    save_file_dir, save_file_name = os.path.split(arg.save_path)
     save_file_dir = os.path.join(path, 'DIIN_model', 'DIIN_model')
     save_file_name = 'model'
     if not os.path.exists(save_file_dir):
@@ -148,7 +143,7 @@ def train(model, arg):
 
     total_parameters = count_parameters()
     print_log('Total trainable parameters : {}'.format(total_parameters), file=logger)
-    #
+
     print_log('Start training and evaluating ...', file=logger)
     start_time = time.time()
     total_batch = 0
@@ -159,7 +154,7 @@ def train(model, arg):
         print_log("Epoch : {}".format(epoch + 1), file=logger)
         sampleNums = len(premises_np_train)
         batchNums = int((sampleNums - 1) / arg.batch_size)
-    #
+
         indices = np.random.permutation(np.arange(sampleNums))
         premises_np_train = premises_np_train[indices]
         premises_mask_train = premises_mask_train[indices]
@@ -175,9 +170,7 @@ def train(model, arg):
         total_loss, total_acc = 0.0, 0.0
         for i in range(batchNums):
             batch_premises_np_train = premises_np_train[i * arg.batch_size: (i+1)*arg.batch_size]
-            batch_premises_mask_train = premises_mask_train[i * arg.batch_size: (i + 1) * arg.batch_size]
             batch_hypothesis_np_train = hypothesis_np_train[i * arg.batch_size: (i+1)*arg.batch_size]
-            batch_hypothesis_mask_train = hypothesis_mask_train[i * arg.batch_size: (i + 1) * arg.batch_size]
             batch_premises_pos_train = premises_pos_train[i * arg.batch_size: (i+1)*arg.batch_size]
             batch_hypothesis_pos_train = hypothesis_pos_train[i * arg.batch_size: (i+1)*arg.batch_size]
             batch_premises_char_train = premises_char_train[i * arg.batch_size: (i+1)*arg.batch_size]
@@ -198,12 +191,11 @@ def train(model, arg):
             _, batch_loss, batch_acc = sess.run([model.train_op, model.total_cost, model.acc], feed_dict=feed_dict)
             total_loss += batch_loss * batch_nums
             total_acc += batch_acc * batch_nums
-    #
+
             if total_batch % arg.eval_batch == 0:
                 s = sess.run(merged_summary, feed_dict=feed_dict)
                 writer.add_summary(s, total_batch)
-    #
-                feed_dict[model.dropout_keep_prob] = 1.0
+
                 loss_val, acc_val = evaluate(sess, model, premises_np_test,
                                              hypothesis_np_test,
                                              premise_pos_test,
@@ -213,11 +205,11 @@ def train(model, arg):
                                              premise_exact_match_test,
                                              hypothesis_exact_match_test,
                                              labels_np_test)
-                saver.save(sess=sess, save_path=arg.save_path + '_dev_loss_{:.4f}.ckpt'.format(loss_val))
+                saver.save(sess=sess, save_path=os.path.join(save_file_dir, save_file_name) + '_dev_loss_{:.4f}.ckpt'.format(loss_val))
                 if acc_val > best_acc_val:
                     best_acc_val = acc_val
                     last_improved_batch = total_batch
-                    saver.save(sess=sess, save_path=arg.best_path)
+                    saver.save(sess=sess, save_path=os.path.join(save_file_dir, 'best_model.ckpt'))
                     improved_flag = '*'
                 else:
                     improved_flag = ''
@@ -239,22 +231,10 @@ def train(model, arg):
 
 
 if __name__ == '__main__':
-    # FIXED_PARAMETERS, arg = params.load_parameters()
     arg = params.args
+    print_args(arg, logger)
     tok_mat = np.random.randn(arg.n_tokens, arg.emb_dim).astype(np.float32) / np.sqrt(arg.emb_dim)
     model = MyModel(arg, arg.seq_length, arg.emb_dim, arg.hidden_dim, True, embeddings=tok_mat, pred_size=2)
     train(model, arg)
-    #
-    #
-    # arg.n_classes = 2
-    # print_log('CMD : python3 {0}'.format(' '.join(sys.argv)), file = logger)
-    # print_log('Training with following options :', file = logger)
-    # print_args(arg, logger)
-    # word_to_ids, id_to_vec = get_word_to_vec(file_name="vec_size100_mincount5.txt")
-    # arg.n_vocab = len(word_to_ids)
-    #
-    # model = ESIM(arg.seq_length, arg.n_vocab, arg.embedding_size, arg.hidden_size, arg.attention_size, arg.n_classes,
-    #              arg.batch_size, arg.learning_rate, arg.optimizer, arg.l2, arg.clip_value)
-    # train(model)
-    # log.close()
+
 
