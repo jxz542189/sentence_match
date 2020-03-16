@@ -3,14 +3,12 @@ import tensorflow as tf
 
 
 sess = tf.Session()
+sess.run(tf.global_variables_initializer())
 with gfile.FastGFile('model.pb', 'rb') as f:
     graph_def = tf.GraphDef()
     graph_def.ParseFromString(f.read())
     sess.graph.as_default()
     tf.import_graph_def(graph_def, name='')
-
-
-sess.run(tf.global_variables_initializer())
 
 print(sess.run('b:0'))
 

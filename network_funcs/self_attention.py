@@ -5,7 +5,14 @@ from network_funcs.mask_utils import exp_mask_for_high_rank, mask_for_high_rank
 from network_funcs.nn_utils import linear
 from network_funcs.logits_utils import get_logits
 from network_funcs.softmax_utils import softsel
+from network_funcs.batchnorm_utils import norm_fn
+from qanet.layers import multihead_attention
+from network_funcs.dropout_utils import layer_dropout
+from network_funcs.cnn_utils import conv
 
+
+
+INITIALIZER = tf.orthogonal_initializer
 
 def disan(rep_tensor, rep_mask, scope=None,
           keep_prob=1., is_train=None, wd=0., activation='elu',

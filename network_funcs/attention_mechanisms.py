@@ -17,7 +17,7 @@ limitations under the License.
 import tensorflow as tf
 from tensorflow.contrib.layers import xavier_initializer as xav
 
-import network_funcs.csoftmax_attention
+from network_funcs import csoftmax_attention
 from network_funcs.log import get_logger
 
 
