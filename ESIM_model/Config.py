@@ -53,7 +53,7 @@ class ModelConfig():
                                    help='L2 normalization constant')
         self.__parser.add_argument('--seq_length',
                                    '-sl',
-                                   default=100,
+                                   default=30,
                                    type=int,
                                    help='Max length of input sentence')
         self.__parser.add_argument('--optimizer',
@@ -187,7 +187,7 @@ class ModelConfig():
         ## config
         self.__parser.add_argument('--config_path',
                                    '-cp',
-                                   default='./config/config.yaml',
+                                   default='./ESIM_model/config/config.yaml',
                                    type=str,
                                    help='Config path')
 

@@ -17,6 +17,7 @@ optimizer_factory = {"adadelta":tf.train.AdadeltaOptimizer,
             "gradientdescent":tf.train.GradientDescentOptimizer,
             "adagrad":tf.train.AdagradOptimizer}
 
+
 class Model(object):
     def __init__(self,is_training = True, demo = False):
         # Build the computational graph when initializing

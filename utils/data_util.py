@@ -14,16 +14,16 @@ from sklearn.externals import joblib
 
 
 path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-data_path = os.path.join(path, 'data')
+data_path1 = os.path.join(path, 'data')
 seg = pkuseg.pkuseg()
 pos_dict = {'unk': 0, 'ag': 1, 'a': 2, 'ad': 3, 'an': 4, 'b': 5, 'c': 6, 'dg': 7, 'd': 8, 'e': 9, 'f': 10, 'g': 11, 'h': 12, 'i': 13, 'j': 14, 'k': 15, 'l': 16, 'm': 17, 'ng': 18, 'n': 19, 'nr': 20, 'ns': 21, 'nt': 22, 'nz': 23, 'o': 24, 'p': 25, 'q': 26, 'r': 27, 's': 28, 'tg': 29, 't': 30, 'u': 31, 'vg': 32, 'v': 33, 'vd': 34, 'vn': 35, 'w': 36, 'x': 37, 'y': 38, 'z': 39, 'un': 40}
 pos_len = 47
 pos_i = 40
-chars_to_id = joblib.load(os.path.join(data_path, 'chars_to_id.m'))
+# chars_to_id = joblib.load(os.path.join(data_path, 'chars_to_id.m'))
 
 
 def read_csv(file_name, sep='\t', index_col=0, N=None, head=True, header=None):
-    csv_data = pd.read_csv(os.path.join(data_path, file_name), sep=sep, header=header, index_col=index_col)
+    csv_data = pd.read_csv(os.path.join(data_path1, file_name), sep=sep, header=header, index_col=index_col)
     if N == None:
         return csv_data
     else:
@@ -34,7 +34,7 @@ def read_csv(file_name, sep='\t', index_col=0, N=None, head=True, header=None):
 
 
 def get_new_data_by_zhconv(file_name, column_names=None, output_filename="atec_new.csv"):
-    with codecs.open(os.path.join(data_path, file_name)) as f:
+    with codecs.open(os.path.join(data_path1, file_name)) as f:
         lines = f.readlines()
         new_lines = []
         for line in lines:
@@ -53,7 +53,7 @@ def get_new_data_by_zhconv(file_name, column_names=None, output_filename="atec_n
 
 
 def list_write_csv(csv_filename, unprocessed_list, column_names):
-    csv_path = os.path.join(data_path, csv_filename)
+    csv_path = os.path.join(data_path1, csv_filename)
     res = pd.DataFrame(columns=column_names, data=unprocessed_list)
     res.to_csv(csv_path, encoding="utf-8", index=False, sep="\t")
     
@@ -122,11 +122,10 @@ def build_dataset(sess, x_train_np,
 
 
 def get_data(file_name):
-    csv_path = os.path.join(data_path, file_name)
     premises = []
     hypothesis = []
     labels = []
-    with codecs.open(csv_path) as csv_file:
+    with codecs.open(file_name) as csv_file:
         csv_file.readline()
         for line in csv_file:
             sentences = line.split('\t')
@@ -154,7 +153,7 @@ def get_words_id(file_name, output_filename='words.txt'):
     words_id = {}
     words_id['unknow'] = 0
     i = 1
-    with codecs.open(os.path.join(data_path, output_filename), 'w') as f:
+    with codecs.open(os.path.join(data_path1, output_filename), 'w') as f:
         for word in words_set:
             words_id[word] = i
             i += 1
@@ -169,8 +168,9 @@ def get_text(file_name, output_filename="text.txt"):
         res.append(" ".join(seg.cut(line)) + "\n")
     for line in hypothesis:
         res.append(" ".join(seg.cut(line)) + "\n")
-    with codecs.open(os.path.join(data_path, output_filename), 'w') as f:
+    with codecs.open(os.path.join(data_path1, output_filename), 'w') as f:
         f.writelines(res)
+
 
 
 def get_word_to_vec(file_name):
@@ -179,7 +179,7 @@ def get_word_to_vec(file_name):
     id_to_vec = {}
     i = 1
 
-    with codecs.open(os.path.join(data_path, file_name)) as f:
+    with codecs.open(file_name) as f:
         emb_size = int(f.readline().split()[1])
         id_to_vec[0] = np.random.rand(emb_size)
         txt = f.readline()
@@ -191,6 +191,22 @@ def get_word_to_vec(file_name):
             txt = f.readline()
             i += 1
     return word_to_ids, id_to_vec
+
+
+def get_word_to_id(file_name):
+    word_to_ids = {}
+    word_to_ids['unknow'] = 0
+    i = 1
+
+    with codecs.open(file_name) as f:
+        txt = f.readline()
+        while txt:
+            if txt != '\r\n':
+                word_to_ids[re.sub('\n', '',str(txt))] = i
+
+            txt = f.readline()
+            i += 1
+    return word_to_ids
 
 
 def sentence_to_ids(sentence, word_to_ids, sentence_len=30):
@@ -210,14 +226,14 @@ def get_chars(filename='words.txt', output_file='chars_to_id.txt'):
     chars_to_id = {}
     chars_to_id['unk'] = 0
     i = 0
-    with open(os.path.join(data_path, filename)) as f:
+    with open(os.path.join(data_path1, filename)) as f:
         for line in f:
             word = line.split(' ')[0]
             for ch in word:
                 if ch not in chars_to_id:
                     chars_to_id[ch] = i + 1
                     i += 1
-    joblib.dump(chars_to_id, os.path.join(data_path, output_file))
+    joblib.dump(chars_to_id, os.path.join(data_path1, output_file))
     return chars_to_id
 
 

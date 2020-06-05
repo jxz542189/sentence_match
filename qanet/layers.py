@@ -88,6 +88,7 @@ def layer_dropout(inputs, residual, dropout):
     pred = tf.random_uniform([]) < dropout
     return tf.cond(pred, lambda: residual, lambda: tf.nn.dropout(inputs, 1.0 - dropout) + residual)
 
+
 def residual_block(inputs, num_blocks, num_conv_layers, kernel_size, mask = None,
                    num_filters = 128, input_projection = False, num_heads = 8,
                    seq_len = None, scope = "res_block", is_training = True,
@@ -108,6 +109,7 @@ def residual_block(inputs, num_blocks, num_conv_layers, kernel_size, mask = None
                 bias = bias, dropout = dropout, sublayers = (sublayer, total_sublayers))
         return outputs
 
+
 def conv_block(inputs, num_conv_layers, kernel_size, num_filters,
                seq_len = None, scope = "conv_block", is_training = True,
                reuse = None, bias = True, dropout = 0.0, sublayers = (1, 1)):
@@ -125,6 +127,7 @@ def conv_block(inputs, num_conv_layers, kernel_size, num_filters,
             outputs = layer_dropout(outputs, residual, dropout * float(l) / L)
             l += 1
         return tf.squeeze(outputs,2), l
+
 
 def self_attention_block(inputs, num_filters, seq_len, mask = None, num_heads = 8,
                          scope = "self_attention_ffn", reuse = None, is_training = True,
@@ -147,6 +150,7 @@ def self_attention_block(inputs, num_filters, seq_len, mask = None, num_heads = 
         outputs = layer_dropout(outputs, residual, dropout * float(l) / L)
         l += 1
         return outputs, l
+
 
 def multihead_attention(queries, units, num_heads,
                         memory = None,
@@ -178,6 +182,7 @@ def multihead_attention(queries, units, num_heads,
                                   reuse = reuse, dropout = dropout)
         return combine_last_two_dimensions(tf.transpose(x,[0,2,1,3]))
 
+
 def conv(inputs, output_size, bias = None, activation = None, kernel_size = 1, name = "conv", reuse = None):
     with tf.variable_scope(name, reuse = reuse):
         shapes = inputs.shape.as_list()
@@ -208,10 +213,12 @@ def conv(inputs, output_size, bias = None, activation = None, kernel_size = 1, n
         else:
             return outputs
 
+
 def mask_logits(inputs, mask, mask_value = -1e30):
     shapes = inputs.shape.as_list()
     mask = tf.cast(mask, tf.float32)
     return inputs + mask_value * (1 - mask)
+
 
 def depthwise_separable_convolution(inputs, kernel_size, num_filters,
                                     scope = "depthwise_separable_convolution",
@@ -289,13 +296,14 @@ def dot_product_attention(q,
                     initializer = tf.zeros_initializer())
             logits += b
         if mask is not None:
-            shapes = [x  if x != None else -1 for x in logits.shape.as_list()]
+            shapes = [x if x != None else -1 for x in logits.shape.as_list()]
             mask = tf.reshape(mask, [shapes[0],1,1,shapes[-1]])
             logits = mask_logits(logits, mask)
         weights = tf.nn.softmax(logits, name="attention_weights")
         # dropping out the attention links for each of the heads
         weights = tf.nn.dropout(weights, 1.0 - dropout)
         return tf.matmul(weights, v)
+
 
 def combine_last_two_dimensions(x):
     """Reshape x so that the last two dimension become one.
@@ -310,6 +318,7 @@ def combine_last_two_dimensions(x):
     ret = tf.reshape(x, tf.concat([tf.shape(x)[:-2], [-1]], 0))
     ret.set_shape(new_shape)
     return ret
+
 
 def add_timing_signal_1d(x, min_timescale=1.0, max_timescale=1.0e4):
     """Adds a bunch of sinusoids of different frequencies to a Tensor.
@@ -337,6 +346,7 @@ def add_timing_signal_1d(x, min_timescale=1.0, max_timescale=1.0e4):
     channels = tf.shape(x)[2]
     signal = get_timing_signal_1d(length, channels, min_timescale, max_timescale)
     return x + signal
+
 
 def get_timing_signal_1d(length, channels, min_timescale=1.0, max_timescale=1.0e4):
     """Gets a bunch of sinusoids of different frequencies.
@@ -375,6 +385,7 @@ def get_timing_signal_1d(length, channels, min_timescale=1.0, max_timescale=1.0e
     signal = tf.reshape(signal, [1, length, channels])
     return signal
 
+
 def ndim(x):
     """Copied from keras==2.0.6
     Returns the number of axes in a tensor, as an integer.
@@ -401,6 +412,7 @@ def ndim(x):
     if dims is not None:
         return len(dims)
     return None
+
 
 def dot(x, y):
     """Modified from keras==2.0.6
@@ -443,6 +455,7 @@ def dot(x, y):
     else:
         out = tf.matmul(x, y)
     return out
+
 
 def batch_dot(x, y, axes=None):
     """Copy from keras==2.0.6
@@ -502,6 +515,7 @@ def batch_dot(x, y, axes=None):
         out = tf.expand_dims(out, 1)
     return out
 
+
 def optimized_trilinear_for_attention(args, c_maxlen, q_maxlen, input_keep_prob=1.0,
     scope = 'efficient_trilinear',
     bias_initializer = tf.zeros_initializer(),
@@ -544,6 +558,7 @@ def optimized_trilinear_for_attention(args, c_maxlen, q_maxlen, input_keep_prob=
         nn_ops.bias_add(res, biases)
         return res
 
+
 def trilinear(args,
             output_size = 1,
             bias = True,
@@ -558,6 +573,7 @@ def trilinear(args,
         out = reconstruct(flat_out, args[0], 1)
         return tf.squeeze(out, -1)
 
+
 def flatten(tensor, keep):
     fixed_shape = tensor.get_shape().as_list()
     start = len(fixed_shape) - keep
@@ -565,6 +581,7 @@ def flatten(tensor, keep):
     out_shape = [left] + [fixed_shape[i] or tf.shape(tensor)[i] for i in range(start, len(fixed_shape))]
     flat = tf.reshape(tensor, out_shape)
     return flat
+
 
 def reconstruct(tensor, ref, keep):
     ref_shape = ref.get_shape().as_list()
@@ -639,6 +656,7 @@ def _linear(args,
           regularizer=regularizer,
           initializer=bias_initializer)
     return nn_ops.bias_add(res, biases)
+
 
 def total_params():
     total_parameters = 0

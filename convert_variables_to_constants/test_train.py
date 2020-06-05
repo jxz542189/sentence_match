@@ -6,14 +6,13 @@ pb_file_path = ''
 
 
 with tf.Session(graph=tf.Graph()) as sess:
+    sess.run(tf.global_variables_initializer())
     x = tf.placeholder(tf.int32, name='x')
     y = tf.placeholder(tf.int32, name='y')
     b = tf.Variable(1, name='b')
     xy = tf.multiply(x, y)
 
     op = tf.add(xy, b, name='op_to_store')
-
-    sess.run(tf.global_variables_initializer())
 
     constant_graph = graph_util.convert_variables_to_constants(sess, sess.graph_def,
                                                                ['op_to_store'])

@@ -8,6 +8,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.rnn import LSTMCell, DropoutWrapper
 from ESIM_model.Utils import print_shape
@@ -81,7 +82,9 @@ class ESIM(object):
         self.y = tf.placeholder(tf.float32, [None, self.n_classes], 'y_true')
         self.premise_mask = tf.placeholder(tf.int32, [None, ], 'premise_actual_length')
         self.hypothesis_mask = tf.placeholder(tf.int32, [None,], 'hypothesis_actual_length')
-        self.embed_matrix = tf.placeholder(tf.float32, [self.n_vocab, self.embedding_size], 'embed_matrix')
+        tok_mat = np.random.randn(self.n_vocab, self.embedding_size).astype(np.float32) / np.sqrt(self.embedding_size)
+        self.embed_matrix = tf.Variable(tok_mat, name="embed_matrix", trainable=True)
+        # self.embed_matrix = tf.Variable(tf.float32, [self.n_vocab, self.embedding_size], 'embed_matrix')
         self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
 
     # build graph

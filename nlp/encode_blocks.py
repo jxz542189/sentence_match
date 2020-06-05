@@ -154,6 +154,7 @@ def elmo_encoder(source_embedding, sequence_length, num_layers, num_units):
         final_state = tuple(encoder_states)
         return final_outputs, final_state
 
+
 def gnmt_encoder(source_embedding, sequence_length, num_units, num_layers):
     print("build gnmt encoder")
     with tf.variable_scope("gnmt_encoder") as scope:

@@ -813,9 +813,9 @@ def conv_blocks(config, arg, filter_size, name, is_train, tensor_dict=None):
         if config.transitioning_conv_blocks:
             res = residual(config, arg, init_dim, 336, filter_size, "res_transition_1", act=act, norm=norm,
                            is_train=is_train, tensor_dict=tensor_dict)
-            res = residual(config, arg, 336, 224, filter_size, "res_transition_2", act=act, norm=norm,
+            res = residual(config, res, 336, 224, filter_size, "res_transition_2", act=act, norm=norm,
                            is_train=is_train, tensor_dict=tensor_dict)
-            res = residual(config, arg, 224, config.res_conv_1_chan, filter_size, "res1", act=act, norm=norm,
+            res = residual(config, res, 224, config.res_conv_1_chan, filter_size, "res1", act=act, norm=norm,
                            is_train=is_train, tensor_dict=tensor_dict)
         else:
             res = residual(config, arg, init_dim, config.res_conv_1_chan, filter_size, "res1", act=act, norm=norm,

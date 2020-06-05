@@ -44,11 +44,13 @@ def get_attn_params(attn_size,initializer = tf.truncated_normal_initializer):
                 "v":tf.get_variable("v",dtype = tf.float32, shape = (attn_size), initializer =initializer())}
         return params
 
+
 def encoding(word, char, word_embeddings, char_embeddings, scope = "embedding"):
     with tf.variable_scope(scope):
         word_encoding = tf.nn.embedding_lookup(word_embeddings, word)
         char_encoding = tf.nn.embedding_lookup(char_embeddings, char)
         return word_encoding, char_encoding
+
 
 def apply_dropout(inputs, size = None, is_training = True):
     '''
@@ -103,6 +105,7 @@ def bidirectional_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.
         elif output == 1:
             return tf.reshape(tf.concat(states,1),(Params.batch_size, shapes[1], 2*units))
 
+
 def pointer_net(passage, passage_len, question, question_len, cell, params, scope = "pointer_network"):
     '''
     Answer pointer network as proposed in https://arxiv.org/pdf/1506.03134.pdf.
@@ -146,6 +149,7 @@ def pointer_net(passage, passage_len, question, question_len, cell, params, scop
         inputs = [passage, state]
         p2_logits = attention(inputs, Params.attn_size, weights_p, memory_len = passage_len, scope = "attention", reuse = True)
         return tf.stack((p1_logits,p2_logits),1)
+
 
 def attention_rnn(inputs, inputs_len, units, attn_cell, bidirection = True,
                   scope = "gated_attention_rnn", is_training = True):

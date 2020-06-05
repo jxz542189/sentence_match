@@ -288,6 +288,7 @@ def dense_logits(config, args, out_size, bias, bias_start=0.0, scope=None,
 
         return out
 
+
 def fuse_gate(config, is_train, lhs, rhs, scope=None):
     with tf.variable_scope(scope or "fuse_gate"):
         dim = lhs.get_shape().as_list()[-1]

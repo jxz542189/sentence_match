@@ -18,10 +18,15 @@ from collections import Counter
 import pickle
 import time
 import json
+from utils.log import *
+from termcolor import colored
 
 UNKNOWN = '<UNK>'
 PADDING = '<PAD>'
 CATEGORIE_ID = {'entailment' : 0, 'neutral' : 1, 'contradiction' : 2}
+
+
+logger = set_logger(colored('oredict', 'yellow'), False)
 
 def lazy_property(function):
     attribute = '_cache_' + function.__name__
@@ -42,7 +47,7 @@ def print_shape(varname, var):
     :param varname: tensor name
     :param var: tensor variable
     """
-    print('{0} : {1}'.format(varname, var.get_shape()))
+    logger.info('{0} : {1}'.format(varname, var.get_shape()))
 
 # init embeddings randomly
 def init_embeddings(vocab, embedding_dims):
@@ -123,7 +128,7 @@ def build_vocab(dataPath, vocabPath, threshold = 0, lowercase = True):
     wordFreq = ['||'.join([word, str(freq)]) for word, freq in cntDict]
     with open(vocabPath, mode='w', encoding='utf-8') as oF:
         oF.write('\n'.join(wordFreq) + '\n')
-    print('Vacabulary is stored in : {}'.format(vocabPath))
+    logger.info('Vacabulary is stored in : {}'.format(vocabPath))
 
 # load vocabulary
 def load_vocab(vocabPath, threshold = 0):
@@ -140,7 +145,7 @@ def load_vocab(vocabPath, threshold = 0):
         for line in f:
             items = [v.strip() for v in line.split('||')]
             if len(items) != 2:
-                print('Wrong format: ', line)
+                logger.info('Wrong format: ', line)
                 continue
             word, freq = items[0], int(items[1])
             if freq >= threshold:
@@ -232,15 +237,15 @@ def convert_data(jsonPath, txtPath):
         for line in fin:
             text = json.loads(line)
             cnt[text['gold_label']] += 1
-            print('||'.join([text['gold_label'], text['sentence1'], text['sentence2']]), file = fout)
+            logger.info('||'.join([text['gold_label'], text['sentence1'], text['sentence2']]), file = fout)
 
             i += 1
             if i % 10000 == 0:
-                print(i)
+                logger.info(i)
 
     for key, value in cnt.items():
-        print('#{0} : {1}'.format(key, value))
-    print('Source data has been converted from "{0}" to "{1}".'.format(jsonPath, txtPath))
+        logger.info('#{0} : {1}'.format(key, value))
+    logger.info('Source data has been converted from "{0}" to "{1}".'.format(jsonPath, txtPath))
 
 # convert embeddings from txt to format : (embeddings, vocab_dict)
 def convert_embeddings(srcPath, dstPath):
@@ -299,9 +304,9 @@ def print_args(args, log_file):
     """
     argsDict = vars(args)
     argsList = sorted(argsDict.items())
-    print_log("------------- HYPER PARAMETERS -------------", file = log_file)
+    logger.info("------------- HYPER PARAMETERS -------------")
     for a in argsList:
-        print_log("%s: %s" % (a[0], str(a[1])), file = log_file)
-    print_log("-----------------------------------------", file = log_file)
+        logger.info("%s: %s" % (a[0], str(a[1])))
+    logger.info("-----------------------------------------")
     return None
 

@@ -18,13 +18,12 @@ class Model(object):
 
 
 with tf.Session(graph=tf.Graph()) as sess:
+    sess.run(tf.global_variables_initializer())
     x = tf.placeholder(tf.int32, name='x')
     y = tf.placeholder(tf.int32, name='y')
     model = Model(x, y)
     model.build_model()
     saver = tf.train.Saver(max_to_keep=1)
-
-    sess.run(tf.global_variables_initializer())
 
     constant_graph = graph_util.convert_variables_to_constants(sess, sess.graph_def, ['op_to_store'])
 
